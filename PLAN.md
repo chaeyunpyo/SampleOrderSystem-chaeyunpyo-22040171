@@ -111,6 +111,6 @@
 3. `.claude/agents/test-writer.md` — 도메인 로직에 대한 pytest 테스트 작성.
 4. `.claude/agents/plan-logger.md` — PLAN.md 항목을 정해진 포맷으로 이어쓰기.
 
-**상태**: ACTION 완료 (`.claude/agents/spec-guardian.md`, `domain-reviewer.md`, `test-writer.md`, `plan-logger.md` 작성, CLAUDE.md에 참조 추가). COMMIT 대기.
+**상태**: COMMIT 완료 (`43d4a8f`).
 
 ---
