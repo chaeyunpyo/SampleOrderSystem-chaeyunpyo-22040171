@@ -16,3 +16,4 @@
 | [0008](./0008-mvc-skeleton.md) | MVC 골격 구현 (Model/Controller/View + JSON 영속성 + 테스트) | 2026-07-15 | COMMIT 완료 (`9b44691`) |
 | [0009](./0009-tools-dummy-data-and-monitor.md) | tools/: 더미데이터 생성기 + 모니터 실행 스크립트 | 2026-07-15 | COMMIT 완료 (`f41f231`) |
 | [0010](./0010-readme-and-validation-tests.md) | README.md 작성 + 입력 검증 테스트 보강 | 2026-07-15 | COMMIT 완료 (`85bfd6d`) |
+| [0011](./0011-cli-input-usability.md) | CLI 입력 사용성 개선 (재시도 + 취소) | 2026-07-15 | COMMIT 완료 (`eca1702`) |
