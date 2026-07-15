@@ -24,3 +24,4 @@
 | [0016](./0016-robustness-and-monitoring-tier-fix.md) | 견고성 수정(크래시 방지) + 모니터링 재고 티어 로직 보정 | 2026-07-15 | COMMIT 완료 (`79056e7`) |
 | [0017](./0017-summary-layout-and-progress-bar.md) | 요약 세로 레이아웃 + 생산 진행률 바 + 시료 목록 정렬 수정 | 2026-07-15 | COMMIT 완료 (`314c23d`) |
 | [0018](./0018-monitoring-detail-and-nav-design.md) | 모니터링 정보량 확대 + 메인 메뉴 네비게이션 디자인 개선 | 2026-07-15 | COMMIT 완료 (`0d9f5ec`) |
+| [0019](./0019-alignment-fixes-round2.md) | 정렬 재수정: 부동소수점 표시 + 한글 폭 가정 되돌림 | 2026-07-15 | COMMIT 완료 (`874ed21`) |
