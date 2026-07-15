@@ -23,3 +23,4 @@
 | [0015](./0015-cli-table-alignment.md) | CLI 행/열 정렬 및 줄바꿈 사용성 개선 | 2026-07-15 | COMMIT 완료 (`c4bbf48`) |
 | [0016](./0016-robustness-and-monitoring-tier-fix.md) | 견고성 수정(크래시 방지) + 모니터링 재고 티어 로직 보정 | 2026-07-15 | COMMIT 완료 (`79056e7`) |
 | [0017](./0017-summary-layout-and-progress-bar.md) | 요약 세로 레이아웃 + 생산 진행률 바 + 시료 목록 정렬 수정 | 2026-07-15 | COMMIT 완료 (`314c23d`) |
+| [0018](./0018-monitoring-detail-and-nav-design.md) | 모니터링 정보량 확대 + 메인 메뉴 네비게이션 디자인 개선 | 2026-07-15 | COMMIT 완료 (`0d9f5ec`) |
