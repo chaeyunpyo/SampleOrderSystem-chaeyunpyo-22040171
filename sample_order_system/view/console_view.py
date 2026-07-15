@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from sample_order_system.controller.main_controller import MainController
-from sample_order_system.model.order import Order
+from sample_order_system.model.order import Order, OrderStatus
 from sample_order_system.view.colors import (
     CYAN,
+    YELLOW,
     colorize,
     failure,
     muted,
@@ -11,7 +12,7 @@ from sample_order_system.view.colors import (
     success,
     tier_text,
 )
-from sample_order_system.view.table import render_bar, render_table
+from sample_order_system.view.table import pad, render_bar, render_table
 
 BANNER = r"""
       ___________________
@@ -74,13 +75,30 @@ class ConsoleView:
         print(f"생산 큐   : {summary['production_queue_count']}건")
         print("=" * 40)
 
+        counts = self.controller.monitoring_controller.count_by_status()
+        reserved_count = counts[OrderStatus.RESERVED.value]["count"]
+        confirmed_count = counts[OrderStatus.CONFIRMED.value]["count"]
+        if reserved_count > 0:
+            print(colorize(f"🔔 승인/거절 대기 중인 주문이 {reserved_count}건 있습니다 (메뉴 2)", YELLOW))
+        if confirmed_count > 0:
+            print(colorize(f"📦 출고 대기 중인 주문이 {confirmed_count}건 있습니다 (메뉴 4)", CYAN))
+        if reserved_count or confirmed_count:
+            print()
+
     def _print_main_menu(self) -> None:
-        print("1. 시료 관리")
-        print("2. 주문 (접수/승인/거절)")
-        print("3. 모니터링")
-        print("4. 출고 처리")
-        print("5. 생산 라인")
-        print("0. 종료")
+        items = [
+            "1. 시료 관리",
+            "2. 주문 (접수/승인/거절)",
+            "3. 모니터링",
+            "4. 출고 처리",
+            "5. 생산 라인",
+            "0. 종료",
+        ]
+        width = 36
+        print("┌" + "─" * (width + 2) + "┐")
+        for item in items:
+            print("│ " + pad(item, width) + " │")
+        print("└" + "─" * (width + 2) + "┘")
 
     def _report_completions(self, completed_orders: list[Order]) -> None:
         for order in completed_orders:
@@ -266,8 +284,21 @@ class ConsoleView:
     def _monitoring_menu(self) -> None:
         print("-- 주문량 확인 --")
         counts = self.controller.monitoring_controller.count_by_status()
-        rows = [[status_text(status), str(stats["count"]), str(stats["quantity"])] for status, stats in counts.items()]
-        self._print_table(["상태", "건수", "수량"], rows, aligns=["left", "right", "right"])
+        max_quantity = max((stats["quantity"] for stats in counts.values()), default=0) or 1
+        rows = [
+            [
+                status_text(status),
+                str(stats["count"]),
+                str(stats["quantity"]),
+                render_bar(stats["quantity"] / max_quantity * 100, width=15),
+            ]
+            for status, stats in counts.items()
+        ]
+        self._print_table(
+            ["상태", "건수", "수량", "비중(수량 기준)"],
+            rows,
+            aligns=["left", "right", "right", "left"],
+        )
 
         print("-- 재고량 확인 --")
         inventory = self.controller.monitoring_controller.inventory_status()
@@ -275,14 +306,23 @@ class ConsoleView:
             print("등록된 시료가 없습니다.")
             print()
             return
-        rows = [
-            [row["sample_id"], row["name"], str(row["stock_quantity"]), str(row["pending_qty"]), tier_text(row["tier"])]
-            for row in inventory
-        ]
+        rows = []
+        for row in inventory:
+            coverage = 100.0 if row["pending_qty"] == 0 else min(100.0, row["stock_quantity"] / row["pending_qty"] * 100)
+            rows.append(
+                [
+                    row["sample_id"],
+                    row["name"],
+                    str(row["stock_quantity"]),
+                    str(row["pending_qty"]),
+                    render_bar(coverage, width=15),
+                    tier_text(row["tier"]),
+                ]
+            )
         self._print_table(
-            ["ID", "이름", "재고", "대기수량", "상태"],
+            ["ID", "이름", "재고", "대기수량", "충족률", "상태"],
             rows,
-            aligns=["left", "left", "right", "right", "left"],
+            aligns=["left", "left", "right", "right", "left", "left"],
         )
 
     # -- 출고 처리 ---------------------------------------------------------
