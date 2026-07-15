@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any
+
+_REPLACE_RETRIES = 5
+_REPLACE_RETRY_DELAY_SECONDS = 0.05
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -20,7 +24,20 @@ def save_json_atomic(path: Path, data: Any) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.flush()
         os.fsync(f.fileno())
-    os.replace(tmp_path, path)
+    _replace_with_retry(tmp_path, path)
+
+
+def _replace_with_retry(tmp_path: Path, path: Path) -> None:
+    """os.replace() can transiently fail on Windows (e.g. antivirus/indexer holding
+    a brief lock on the just-written temp file). Retry a few times before giving up."""
+    for attempt in range(_REPLACE_RETRIES):
+        try:
+            os.replace(tmp_path, path)
+            return
+        except PermissionError:
+            if attempt == _REPLACE_RETRIES - 1:
+                raise
+            time.sleep(_REPLACE_RETRY_DELAY_SECONDS)
 
 
 def next_prefixed_id(existing_ids: list[str], prefix: str, width: int = 4) -> str:
