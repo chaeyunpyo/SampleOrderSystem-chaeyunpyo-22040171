@@ -11,7 +11,7 @@ from sample_order_system.view.colors import (
     success,
     tier_text,
 )
-from sample_order_system.view.table import render_table
+from sample_order_system.view.table import render_bar, render_table
 
 BANNER = r"""
       ___________________
@@ -68,10 +68,10 @@ class ConsoleView:
     def _print_summary(self) -> None:
         summary = self.controller.get_summary()
         print("=" * 40)
-        print(
-            f"시료 {summary['sample_count']}종 | 총 재고 {summary['total_stock']} | "
-            f"전체 주문 {summary['order_count']}건 | 생산 큐 {summary['production_queue_count']}건"
-        )
+        print(f"시료      : {summary['sample_count']}종")
+        print(f"총 재고   : {summary['total_stock']}")
+        print(f"전체 주문 : {summary['order_count']}건")
+        print(f"생산 큐   : {summary['production_queue_count']}건")
         print("=" * 40)
 
     def _print_main_menu(self) -> None:
@@ -167,7 +167,7 @@ class ConsoleView:
             print()
             return
         rows = [
-            [s.sample_id, s.name, str(s.avg_production_time), str(s.yield_rate), str(s.stock_quantity)]
+            [s.sample_id, s.name, f"{s.avg_production_time:.1f}", f"{s.yield_rate:.2f}", str(s.stock_quantity)]
             for s in samples
         ]
         self._print_table(
@@ -316,7 +316,7 @@ class ConsoleView:
         active = self.controller.production_controller.get_active_status()
         if active:
             self._print_table(
-                ["주문", "시료", "고객", "주문수량", "부족분", "실생산량", "경과(분)", "총(분)", "남은(분)", "진행률"],
+                ["주문", "시료", "고객", "주문수량", "부족분", "실생산량", "경과(분)", "총(분)", "남은(분)"],
                 [[
                     active["order_id"],
                     f"{active['sample_name']}({active['sample_id']})",
@@ -327,10 +327,11 @@ class ConsoleView:
                     str(active["elapsed_minutes"]),
                     str(active["total_minutes"]),
                     str(active["remaining_minutes"]),
-                    f"{active['percent']}%",
                 ]],
-                aligns=["left", "left", "left", "right", "right", "right", "right", "right", "right", "right"],
+                aligns=["left", "left", "left", "right", "right", "right", "right", "right", "right"],
             )
+            print(colorize(render_bar(active["percent"]), CYAN))
+            print()
         else:
             print("현재 생산 중인 항목이 없습니다.")
             print()

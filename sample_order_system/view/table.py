@@ -50,3 +50,12 @@ def render_table(headers: list[str], rows: list[list[str]], aligns: list[str] | 
     lines = [header_line, separator]
     lines.extend(render_row(row) for row in rows)
     return lines
+
+
+def render_bar(percent: float, width: int = 20) -> str:
+    """0~100 사이의 퍼센트를 `[████░░░░] 42.0%` 형태의 막대 문자열로 렌더링한다.
+    범위를 벗어난 값은 0~100으로 clamp한다."""
+    clamped = max(0.0, min(100.0, percent))
+    filled = round(width * clamped / 100)
+    bar = "█" * filled + "░" * (width - filled)
+    return f"[{bar}] {clamped:.1f}%"
