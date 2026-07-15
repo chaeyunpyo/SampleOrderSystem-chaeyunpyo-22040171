@@ -43,11 +43,11 @@ class ProductionQueueItem:
         return cls(
             order_id=data["order_id"],
             sample_id=data["sample_id"],
-            shortage_qty=data["shortage_qty"],
-            avg_production_time=data["avg_production_time"],
-            yield_rate=data["yield_rate"],
+            shortage_qty=int(data["shortage_qty"]),
+            avg_production_time=float(data["avg_production_time"]),
+            yield_rate=float(data["yield_rate"]),
             enqueued_at=datetime.fromisoformat(data["enqueued_at"]),
             started_at=datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None,
-            actual_production_qty=data["actual_production_qty"],
-            total_production_time=data["total_production_time"],
+            actual_production_qty=int(data["actual_production_qty"]),
+            total_production_time=float(data["total_production_time"]),
         )

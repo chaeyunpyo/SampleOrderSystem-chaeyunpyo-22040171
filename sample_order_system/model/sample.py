@@ -19,7 +19,7 @@ class Sample:
         return cls(
             sample_id=data["sample_id"],
             name=data["name"],
-            avg_production_time=data["avg_production_time"],
-            yield_rate=data["yield_rate"],
-            stock_quantity=data.get("stock_quantity", 0),
+            avg_production_time=float(data["avg_production_time"]),
+            yield_rate=float(data["yield_rate"]),
+            stock_quantity=int(data.get("stock_quantity", 0)),
         )

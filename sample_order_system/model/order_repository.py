@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from sample_order_system.model.errors import DataIntegrityError
 from sample_order_system.model.json_store import load_json, next_prefixed_id, save_json_atomic
 from sample_order_system.model.order import Order
 
@@ -19,8 +21,11 @@ class OrderRepository:
         self._load()
 
     def _load(self) -> None:
-        raw = load_json(self.data_path, default=[])
-        self._orders = {item["order_id"]: Order.from_dict(item) for item in raw}
+        try:
+            raw = load_json(self.data_path, default=[])
+            self._orders = {item["order_id"]: Order.from_dict(item) for item in raw}
+        except (json.JSONDecodeError, KeyError, ValueError, TypeError) as e:
+            raise DataIntegrityError(f"주문 데이터 파일이 손상되었습니다: {self.data_path} ({e})") from e
 
     def _save(self) -> None:
         save_json_atomic(self.data_path, [order.to_dict() for order in self._orders.values()])

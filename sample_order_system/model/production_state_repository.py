@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from sample_order_system.model.errors import DataIntegrityError
 from sample_order_system.model.json_store import load_json, save_json_atomic
 from sample_order_system.model.production_queue import ProductionQueueItem
 
@@ -13,10 +15,13 @@ class ProductionStateRepository:
         self.data_path = data_path
 
     def load(self) -> tuple[list[ProductionQueueItem], ProductionQueueItem | None]:
-        raw = load_json(self.data_path, default={"queue": [], "active": None})
-        queue = [ProductionQueueItem.from_dict(item) for item in raw.get("queue", [])]
-        active_raw = raw.get("active")
-        active = ProductionQueueItem.from_dict(active_raw) if active_raw else None
+        try:
+            raw = load_json(self.data_path, default={"queue": [], "active": None})
+            queue = [ProductionQueueItem.from_dict(item) for item in raw.get("queue", [])]
+            active_raw = raw.get("active")
+            active = ProductionQueueItem.from_dict(active_raw) if active_raw else None
+        except (json.JSONDecodeError, KeyError, ValueError, TypeError, AttributeError) as e:
+            raise DataIntegrityError(f"생산 큐 데이터 파일이 손상되었습니다: {self.data_path} ({e})") from e
         return queue, active
 
     def save(self, queue: list[ProductionQueueItem], active: ProductionQueueItem | None) -> None:

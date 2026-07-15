@@ -42,7 +42,7 @@ class Order:
             order_id=data["order_id"],
             sample_id=data["sample_id"],
             customer_name=data["customer_name"],
-            quantity=data["quantity"],
+            quantity=int(data["quantity"]),
             status=OrderStatus(data["status"]),
             created_at=datetime.fromisoformat(data["created_at"]),
         )
