@@ -21,3 +21,4 @@
 | [0013](./0013-cli-color-and-banner.md) | CLI 색상/배너 디자인 추가 | 2026-07-15 | COMMIT 완료 (`1bf52b1`) |
 | [0014](./0014-overlapping-order-stock-overcommit-fix.md) | 겹치는 주문/생산 재고 이중 소진 버그 수정 | 2026-07-15 | COMMIT 완료 (`1dbdd3a`) |
 | [0015](./0015-cli-table-alignment.md) | CLI 행/열 정렬 및 줄바꿈 사용성 개선 | 2026-07-15 | COMMIT 완료 (`c4bbf48`) |
+| [0016](./0016-robustness-and-monitoring-tier-fix.md) | 견고성 수정(크래시 방지) + 모니터링 재고 티어 로직 보정 | 2026-07-15 | COMMIT 완료 (`79056e7`) |
