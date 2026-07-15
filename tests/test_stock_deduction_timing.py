@@ -13,7 +13,10 @@ def test_approve_sufficient_stock_deducts_immediately(tmp_path):
     assert updated.stock_quantity == 5
 
 
-def test_approve_insufficient_stock_does_not_deduct_yet(tmp_path):
+def test_approve_insufficient_stock_reserves_existing_stock_immediately(tmp_path):
+    """부족 승인 시 남아있던 재고 전량을 즉시 이 주문에 선점(0으로) 시켜야
+    같은 시료의 다른 주문이 동일 재고를 이중으로 사용하지 못한다
+    (겹치는 주문 시나리오는 tests/test_overlapping_orders_stock.py 참고)."""
     controller = make_controller(tmp_path)
     sample = register_sample(controller, stock=2)
     order = controller.order_controller.create_order(sample.sample_id, "고객A", 5)
@@ -21,7 +24,7 @@ def test_approve_insufficient_stock_does_not_deduct_yet(tmp_path):
     controller.order_controller.approve_order(order.order_id)
 
     updated = controller.sample_repository.get(sample.sample_id)
-    assert updated.stock_quantity == 2
+    assert updated.stock_quantity == 0
 
 
 def test_production_completion_net_change_is_actual_qty_minus_order_qty(tmp_path):
