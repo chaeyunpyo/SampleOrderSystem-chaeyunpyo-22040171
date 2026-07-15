@@ -53,6 +53,32 @@ class ConsoleView:
         for order in completed_orders:
             print(f"[생산 완료] {order.order_id} → CONFIRMED")
 
+    # -- 입력 헬퍼 (빈 입력으로 취소, 잘못된 값은 같은 항목만 재입력) --------
+
+    def _read_required(self, prompt: str) -> str | None:
+        value = input(f"{prompt} (취소: Enter)> ").strip()
+        return value or None
+
+    def _read_int(self, prompt: str) -> int | None:
+        while True:
+            raw = input(f"{prompt} (취소: Enter)> ").strip()
+            if not raw:
+                return None
+            try:
+                return int(raw)
+            except ValueError:
+                print("숫자를 입력하세요.")
+
+    def _read_float(self, prompt: str) -> float | None:
+        while True:
+            raw = input(f"{prompt} (취소: Enter)> ").strip()
+            if not raw:
+                return None
+            try:
+                return float(raw)
+            except ValueError:
+                print("숫자를 입력하세요.")
+
     # -- 시료 관리 -------------------------------------------------------
 
     def _sample_menu(self) -> None:
@@ -77,10 +103,20 @@ class ConsoleView:
                 print("올바르지 않은 메뉴입니다.")
 
     def _register_sample(self) -> None:
+        name = self._read_required("시료 이름")
+        if name is None:
+            print("취소되었습니다.")
+            return
+        avg_production_time = self._read_float("평균 생산시간(분)")
+        if avg_production_time is None:
+            print("취소되었습니다.")
+            return
+        yield_rate = self._read_float("수율(0~1)")
+        if yield_rate is None:
+            print("취소되었습니다.")
+            return
+
         try:
-            name = input("시료 이름> ").strip()
-            avg_production_time = float(input("평균 생산시간(분)> ").strip())
-            yield_rate = float(input("수율(0~1)> ").strip())
             sample = self.controller.sample_controller.register_sample(name, avg_production_time, yield_rate)
             print(f"등록 완료: {sample.sample_id} ({sample.name})")
         except ValueError as e:
@@ -116,10 +152,20 @@ class ConsoleView:
                 print("올바르지 않은 메뉴입니다.")
 
     def _create_order(self) -> None:
+        sample_id = self._read_required("시료 ID")
+        if sample_id is None:
+            print("취소되었습니다.")
+            return
+        customer_name = self._read_required("고객명")
+        if customer_name is None:
+            print("취소되었습니다.")
+            return
+        quantity = self._read_int("주문 수량")
+        if quantity is None:
+            print("취소되었습니다.")
+            return
+
         try:
-            sample_id = input("시료 ID> ").strip()
-            customer_name = input("고객명> ").strip()
-            quantity = int(input("주문 수량> ").strip())
             order = self.controller.order_controller.create_order(sample_id, customer_name, quantity)
             print(f"접수 완료: {order.order_id} (RESERVED)")
         except ValueError as e:
@@ -133,8 +179,15 @@ class ConsoleView:
         for o in reserved:
             print(f"{o.order_id} | 시료 {o.sample_id} | 고객 {o.customer_name} | 수량 {o.quantity}")
 
-        order_id = input("대상 주문 ID> ").strip()
-        action = input("승인(a) / 거절(r)> ").strip().lower()
+        order_id = self._read_required("대상 주문 ID")
+        if order_id is None:
+            print("취소되었습니다.")
+            return
+        action = self._read_required("승인(a) / 거절(r)")
+        if action is None:
+            print("취소되었습니다.")
+            return
+        action = action.lower()
         try:
             if action == "a":
                 order = self.controller.order_controller.approve_order(order_id)
@@ -176,7 +229,10 @@ class ConsoleView:
         for o in confirmed:
             print(f"{o.order_id} | 시료 {o.sample_id} | 고객 {o.customer_name} | 수량 {o.quantity}")
 
-        order_id = input("출고할 주문 ID> ").strip()
+        order_id = self._read_required("출고할 주문 ID")
+        if order_id is None:
+            print("취소되었습니다.")
+            return
         try:
             order = self.controller.shipping_controller.ship_order(order_id)
             print(f"출고 완료: {order.order_id} → {order.status.value}")
