@@ -1,0 +1,46 @@
+from __future__ import annotations
+
+import re
+import unicodedata
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _char_width(ch: str) -> int:
+    # 한글/한자 등 동아시아 넓은 문자(Wide/Fullwidth)는 대부분의 터미널에서
+    # 고정폭 글꼴 기준으로 칸을 2개씩 차지한다. 문자 개수가 아니라 이 폭을
+    # 기준으로 정렬해야 영문/숫자와 한글이 섞여도 열이 맞는다.
+    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+
+
+def visible_len(text: str) -> int:
+    """ANSI 색상 이스케이프 코드를 제외하고, 동아시아 넓은 문자 폭을 반영한
+    실제 터미널 표시 폭을 구한다."""
+    plain = _ANSI_RE.sub("", text)
+    return sum(_char_width(ch) for ch in plain)
+
+
+def pad(text: str, width: int, align: str = "left") -> str:
+    extra = max(width - visible_len(text), 0)
+    fill = " " * extra
+    return (fill + text) if align == "right" else (text + fill)
+
+
+def render_table(headers: list[str], rows: list[list[str]], aligns: list[str] | None = None) -> list[str]:
+    """헤더/행을 색상 코드에 영향받지 않고 열 정렬된 문자열 리스트로 렌더링한다.
+    각 셀은 미리 색상이 적용된 텍스트여도 무방하다."""
+    aligns = aligns or ["left"] * len(headers)
+    widths = [visible_len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], visible_len(cell))
+
+    def render_row(cells: list[str]) -> str:
+        return "  ".join(pad(cell, widths[i], aligns[i]) for i, cell in enumerate(cells))
+
+    header_line = render_row(headers)
+    separator = "-" * visible_len(header_line)
+
+    lines = [header_line, separator]
+    lines.extend(render_row(row) for row in rows)
+    return lines
