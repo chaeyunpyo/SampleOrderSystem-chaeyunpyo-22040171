@@ -70,6 +70,9 @@ def reset_data(data_dir: Path) -> None:
 
 
 def run(samples_count: int, orders_count: int, reset: bool, data_dir: Path = DEFAULT_DATA_DIR) -> None:
+    if samples_count < 0 or orders_count < 0:
+        raise ValueError(f"--samples/--orders는 0 이상이어야 합니다 (samples={samples_count}, orders={orders_count}).")
+
     if reset:
         reset_data(data_dir)
 
@@ -93,7 +96,11 @@ def main() -> None:
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR, help="데이터 디렉터리 경로")
     args = parser.parse_args()
 
-    run(args.samples, args.orders, args.reset, args.data_dir)
+    try:
+        run(args.samples, args.orders, args.reset, args.data_dir)
+    except ValueError as e:
+        print(f"오류: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

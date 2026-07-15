@@ -49,6 +49,9 @@ def _clear_screen() -> None:
 
 
 def run(data_dir: Path, interval: float, once: bool) -> None:
+    if not once and interval <= 0:
+        raise ValueError(f"--interval은 0보다 커야 합니다 (입력값: {interval}).")
+
     if once:
         print(render_once(data_dir))
         return
@@ -71,7 +74,11 @@ def main() -> None:
     parser.add_argument("--once", action="store_true", help="한 번만 조회하고 종료")
     args = parser.parse_args()
 
-    run(args.data_dir, args.interval, args.once)
+    try:
+        run(args.data_dir, args.interval, args.once)
+    except ValueError as e:
+        print(f"오류: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -30,6 +30,12 @@ def render_table(headers: list[str], rows: list[list[str]], aligns: list[str] | 
     """헤더/행을 색상 코드에 영향받지 않고 열 정렬된 문자열 리스트로 렌더링한다.
     각 셀은 미리 색상이 적용된 텍스트여도 무방하다."""
     aligns = aligns or ["left"] * len(headers)
+    if len(aligns) != len(headers):
+        raise ValueError(f"aligns 길이({len(aligns)})는 headers 길이({len(headers)})와 같아야 합니다.")
+    for row in rows:
+        if len(row) != len(headers):
+            raise ValueError(f"행의 셀 개수({len(row)})가 headers 개수({len(headers)})와 다릅니다: {row}")
+
     widths = [visible_len(h) for h in headers]
     for row in rows:
         for i, cell in enumerate(row):
