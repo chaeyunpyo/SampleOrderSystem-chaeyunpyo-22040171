@@ -13,3 +13,4 @@
 | [0005](./0005-harness-subagents.md) | Harness: 프로젝트 전용 서브에이전트 4종 스캐폴딩 | 2026-07-15 | COMMIT 완료 (`43d4a8f`) |
 | [0006](./0006-json-persistence-confirmed.md) | 확인: 영속성 방식은 JSON 파일로 확정 | 2026-07-15 | COMMIT 완료 (`45b9328`) |
 | [0007](./0007-plan-log-to-folder.md) | PLAN 관리 방식을 단일 파일에서 폴더 구조로 전환 | 2026-07-15 | COMMIT 완료 (`b552584`) |
+| [0008](./0008-mvc-skeleton.md) | MVC 골격 구현 (Model/Controller/View + JSON 영속성 + 테스트) | 2026-07-15 | ACTION 진행 |
