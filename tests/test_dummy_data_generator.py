@@ -1,3 +1,5 @@
+import pytest
+
 from sample_order_system.model.order import OrderStatus
 from sample_order_system.model.order_repository import OrderRepository
 from sample_order_system.model.sample_repository import SampleRepository
@@ -45,3 +47,13 @@ def test_dummy_orders_never_use_producing_status(tmp_path):
 
     assert OrderStatus.PRODUCING not in DUMMY_ORDER_STATUSES
     assert all(o.status != OrderStatus.PRODUCING for o in orders)
+
+
+def test_negative_samples_count_raises_value_error(tmp_path):
+    with pytest.raises(ValueError):
+        run(samples_count=-1, orders_count=5, reset=False, data_dir=tmp_path)
+
+
+def test_negative_orders_count_raises_value_error(tmp_path):
+    with pytest.raises(ValueError):
+        run(samples_count=5, orders_count=-1, reset=False, data_dir=tmp_path)

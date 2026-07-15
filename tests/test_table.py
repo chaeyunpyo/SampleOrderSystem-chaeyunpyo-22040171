@@ -1,3 +1,5 @@
+import pytest
+
 from sample_order_system.view import table
 from sample_order_system.view.colors import GREEN, RESET, colorize
 
@@ -66,3 +68,18 @@ def test_render_table_right_aligns_numeric_column():
     )
     assert lines[2].rstrip().endswith("1")
     assert lines[3].rstrip().endswith("120")
+
+
+def test_render_table_raises_on_row_length_mismatch():
+    with pytest.raises(ValueError):
+        table.render_table(headers=["a", "b"], rows=[["1", "2", "3"]])
+
+
+def test_render_table_raises_on_row_too_short():
+    with pytest.raises(ValueError):
+        table.render_table(headers=["a", "b"], rows=[["1"]])
+
+
+def test_render_table_raises_on_aligns_length_mismatch():
+    with pytest.raises(ValueError):
+        table.render_table(headers=["a", "b"], rows=[["1", "2"]], aligns=["left"])
