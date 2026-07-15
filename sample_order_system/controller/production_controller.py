@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from sample_order_system.model.clock import Clock, SystemClock
 from sample_order_system.model.order import Order, OrderStatus
-from sample_order_system.model.order_repository import OrderRepository
+from sample_order_system.model.order_repository import OrderNotFoundError, OrderRepository
 from sample_order_system.model.production_queue import ProductionQueueItem
 from sample_order_system.model.production_state_repository import ProductionStateRepository
 from sample_order_system.model.sample import Sample
-from sample_order_system.model.sample_repository import SampleRepository
+from sample_order_system.model.sample_repository import SampleNotFoundError, SampleRepository
 
 
 class ProductionController:
@@ -46,17 +46,26 @@ class ProductionController:
                 self._active.started_at = self.clock.now()
                 self._persist_state()
 
+            lookup = self._try_order_and_sample(self._active)
+            if lookup is None:
+                # 참조가 깨진 항목(수동 편집 등으로 주문/시료가 사라짐) — 되살릴 방법이
+                # 없으므로 버리고 다음 항목으로 진행한다. 여기서 크래시하면 이 항목이
+                # 큐 맨 앞에 남아있는 한 앱이 영영 켜지지 않게 된다.
+                self._active = None
+                self._persist_state()
+                continue
+
+            order, sample = lookup
             elapsed_minutes = (self.clock.now() - self._active.started_at).total_seconds() / 60
             if elapsed_minutes < self._active.total_production_time:
                 break
 
-            completed.append(self._complete_active())
+            completed.append(self._complete_active(order, sample))
 
         return completed
 
-    def _complete_active(self) -> Order:
+    def _complete_active(self, order: Order, sample: Sample) -> Order:
         item = self._active
-        order, sample = self._order_and_sample(item)
 
         # shortage_qty만큼은 이미 승인 시점에 이 주문 몫으로 선점되어 stock_quantity에서
         # 빠져 있었다(order_controller.approve_order 참고). 여기서는 수율 올림으로 생기는
@@ -75,7 +84,10 @@ class ProductionController:
         if self._active is None:
             return None
         item = self._active
-        order, sample = self._order_and_sample(item)
+        lookup = self._try_order_and_sample(item)
+        if lookup is None:
+            return None
+        order, sample = lookup
         elapsed_minutes = (self.clock.now() - item.started_at).total_seconds() / 60
         elapsed_minutes = min(elapsed_minutes, item.total_production_time)
         remaining_minutes = max(item.total_production_time - elapsed_minutes, 0.0)
@@ -106,11 +118,15 @@ class ProductionController:
         expected_wait = active_status["remaining_minutes"] if active_status else 0.0
 
         result = []
-        for position, item in enumerate(self._queue, start=1):
-            order, sample = self._order_and_sample(item)
+        for item in self._queue:
+            lookup = self._try_order_and_sample(item)
+            if lookup is None:
+                # 참조가 깨진 항목은 화면에 표시하지 않는다 (활성화되면 tick()에서 폐기됨).
+                continue
+            order, sample = lookup
             result.append(
                 {
-                    "position": position,
+                    "position": len(result) + 1,
                     "order_id": item.order_id,
                     "sample_id": item.sample_id,
                     "sample_name": sample.name,
@@ -130,6 +146,12 @@ class ProductionController:
         order = self.order_repository.get(item.order_id)
         sample = self.sample_repository.get(item.sample_id)
         return order, sample
+
+    def _try_order_and_sample(self, item: ProductionQueueItem) -> tuple[Order, Sample] | None:
+        try:
+            return self._order_and_sample(item)
+        except (OrderNotFoundError, SampleNotFoundError):
+            return None
 
     def _persist_state(self) -> None:
         self.production_state_repository.save(self._queue, self._active)
