@@ -84,11 +84,11 @@ data/                # 실행 시 생성되는 JSON 데이터 파일 (git 미추
 
 ## 명령어
 
-> 아래는 프로젝트 구조 확정 후 갱신 예정. 초기 골격 작성 시 실제 명령으로 교체할 것.
-
 ```bash
-python main.py          # 콘솔 앱 실행
-pytest                  # 테스트 실행
-python tools/dummy_data_generator.py --samples N --orders N   # 더미 데이터 생성 (예정)
-python tools/run_monitor.py                                   # 모니터링 도구 실행 (예정)
+python main.py                                      # 콘솔 앱 실행
+pytest                                               # 테스트 실행 (38개)
+python -m tools.dummy_data_generator --samples 10 --orders 20 [--reset]   # 더미 데이터 생성
+python -m tools.run_monitor --interval 2 [--once]                        # 모니터링 도구 실행
 ```
+
+`tools/*.py`는 `sample_order_system` 패키지를 import하므로 `python tools/xxx.py`가 아니라 프로젝트 루트에서 `python -m tools.xxx` 형태로 실행한다.

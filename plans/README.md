@@ -14,3 +14,4 @@
 | [0006](./0006-json-persistence-confirmed.md) | 확인: 영속성 방식은 JSON 파일로 확정 | 2026-07-15 | COMMIT 완료 (`45b9328`) |
 | [0007](./0007-plan-log-to-folder.md) | PLAN 관리 방식을 단일 파일에서 폴더 구조로 전환 | 2026-07-15 | COMMIT 완료 (`b552584`) |
 | [0008](./0008-mvc-skeleton.md) | MVC 골격 구현 (Model/Controller/View + JSON 영속성 + 테스트) | 2026-07-15 | COMMIT 완료 (`9b44691`) |
+| [0009](./0009-tools-dummy-data-and-monitor.md) | tools/: 더미데이터 생성기 + 모니터 실행 스크립트 | 2026-07-15 | COMMIT 완료 (`f41f231`) |

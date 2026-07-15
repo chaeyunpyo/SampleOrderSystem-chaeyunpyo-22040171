@@ -139,8 +139,8 @@ RESERVED --(승인, 재고 부족)--> PRODUCING --(생산 완료)--> CONFIRMED -
 | 테스트 | 상태 전이, 생산량 계산, 재고 갱신 등 핵심 도메인 로직에 대한 자동화 테스트 필수 |
 | 코드 품질 | Clean Code 원칙 준수 (명확한 네이밍, 단일 책임, 불필요한 추상화 지양) |
 | 개발 이력 | 의미 단위로 나뉜 커밋 이력 관리 |
-| Dummy Data | 테스트/시연용 더미 시료·주문 생성 도구 제공 ([PoC4] 참고) |
-| 모니터링 도구 | 별도 실행 가능한 콘솔 모니터링 화면 제공 ([PoC3] 참고) |
+| Dummy Data | `tools/dummy_data_generator.py` — `--samples`/`--orders`/`--reset` 지원. 앱과 동일한 `SampleRepository`/`OrderRepository`를 재사용해 `data/`에 시료·주문을 생성한다. 더미 주문 상태는 `PRODUCING`을 제외한 4가지(RESERVED/REJECTED/CONFIRMED/RELEASE) 중 무작위 — `PRODUCING`은 `production_state.json`의 큐/활성 항목과 반드시 짝을 이뤄야 해서 임의 생성 시 불일치가 나기 때문 ([PoC4] 참고) |
+| 모니터링 도구 | `tools/run_monitor.py` — `--interval`/`--once`/`--data-dir` 지원. 앱과 동일한 `MonitoringController`를 재사용해 상태별 건수·수량과 재고 티어를 콘솔에 폴링 표시한다 ([PoC3] 참고) |
 
 ## 6. 범위 밖 (Out of Scope)
 
