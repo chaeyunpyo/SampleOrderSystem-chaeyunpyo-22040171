@@ -10,7 +10,11 @@
 이 과제는 **Agentic Engineering 도입**이 주요 평가 대상이다. 코드 자체뿐 아니라 다음 항목의 품질을 함께 갖춰야 한다:
 
 1. CLAUDE.md / PRD.md 등 문서 관리 — 요구사항과 설계 결정을 문서에 먼저 반영하고 코드로 옮긴다.
-2. Harness 도입 — 반복 가능한 실행/검증 절차(스크립트, 시드 데이터, 모니터링 도구 등).
+2. Harness 도입 — 반복 가능한 실행/검증 절차(스크립트, 시드 데이터, 모니터링 도구 등) + `.claude/agents/`의 전용 서브에이전트 4종:
+   - `spec-guardian` — 계획/구현이 PRD.md와 일치하는지 검증 (PLAN 전, COMMIT 전)
+   - `domain-reviewer` — MVC 의존 방향, Clean Code, 도메인 로직 버그 리뷰 (ACTION 후)
+   - `test-writer` — 도메인 로직에 대한 pytest 작성 (Model/Controller 변경 후)
+   - `plan-logger` — PLAN.md 항목을 정해진 포맷으로 이어쓰기 (PLAN 진입 시)
 3. Test — 핵심 도메인 로직(상태 전이, 생산량 계산, 재고 갱신)은 자동화 테스트로 검증한다.
 4. Clean Code — 단일 책임, 명확한 네이밍, 불필요한 추상화 지양.
 5. Commit 이력 — 의미 단위로 나뉜 커밋. 하나의 커밋에 여러 관심사를 섞지 않는다.
