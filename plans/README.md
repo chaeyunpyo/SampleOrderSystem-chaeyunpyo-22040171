@@ -15,3 +15,4 @@
 | [0007](./0007-plan-log-to-folder.md) | PLAN 관리 방식을 단일 파일에서 폴더 구조로 전환 | 2026-07-15 | COMMIT 완료 (`b552584`) |
 | [0008](./0008-mvc-skeleton.md) | MVC 골격 구현 (Model/Controller/View + JSON 영속성 + 테스트) | 2026-07-15 | COMMIT 완료 (`9b44691`) |
 | [0009](./0009-tools-dummy-data-and-monitor.md) | tools/: 더미데이터 생성기 + 모니터 실행 스크립트 | 2026-07-15 | COMMIT 완료 (`f41f231`) |
+| [0010](./0010-readme-and-validation-tests.md) | README.md 작성 + 입력 검증 테스트 보강 | 2026-07-15 | COMMIT 완료 (`85bfd6d`) |
