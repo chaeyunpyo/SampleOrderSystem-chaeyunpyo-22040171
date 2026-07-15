@@ -83,3 +83,23 @@ def test_render_table_raises_on_row_too_short():
 def test_render_table_raises_on_aligns_length_mismatch():
     with pytest.raises(ValueError):
         table.render_table(headers=["a", "b"], rows=[["1", "2"]], aligns=["left"])
+
+
+def test_render_bar_at_zero_percent_is_fully_empty():
+    bar = table.render_bar(0, width=10)
+    assert bar == "[░░░░░░░░░░] 0.0%"
+
+
+def test_render_bar_at_hundred_percent_is_fully_filled():
+    bar = table.render_bar(100, width=10)
+    assert bar == "[██████████] 100.0%"
+
+
+def test_render_bar_at_fifty_percent_is_half_filled():
+    bar = table.render_bar(50, width=10)
+    assert bar == "[█████░░░░░] 50.0%"
+
+
+def test_render_bar_clamps_out_of_range_values():
+    assert table.render_bar(150, width=10) == "[██████████] 100.0%"
+    assert table.render_bar(-20, width=10) == "[░░░░░░░░░░] 0.0%"
