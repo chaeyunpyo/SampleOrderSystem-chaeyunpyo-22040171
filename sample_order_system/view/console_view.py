@@ -364,9 +364,9 @@ class ConsoleView:
                     str(active["order_quantity"]),
                     str(active["shortage_qty"]),
                     str(active["target_qty"]),
-                    str(active["elapsed_minutes"]),
-                    str(active["total_minutes"]),
-                    str(active["remaining_minutes"]),
+                    f"{active['elapsed_minutes']:.2f}",
+                    f"{active['total_minutes']:.2f}",
+                    f"{active['remaining_minutes']:.2f}",
                 ]],
                 aligns=["left", "left", "left", "right", "right", "right", "right", "right", "right"],
             )
@@ -391,8 +391,8 @@ class ConsoleView:
                 str(row["order_quantity"]),
                 str(row["shortage_qty"]),
                 str(row["actual_production_qty"]),
-                str(row["total_minutes"]),
-                str(row["expected_wait_minutes"]),
+                f"{row['total_minutes']:.2f}",
+                f"{row['expected_wait_minutes']:.2f}",
             ]
             for row in waiting
         ]

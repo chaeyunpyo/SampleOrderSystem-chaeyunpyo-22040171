@@ -1,23 +1,17 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 
 _ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
-def _char_width(ch: str) -> int:
-    # 한글/한자 등 동아시아 넓은 문자(Wide/Fullwidth)는 대부분의 터미널에서
-    # 고정폭 글꼴 기준으로 칸을 2개씩 차지한다. 문자 개수가 아니라 이 폭을
-    # 기준으로 정렬해야 영문/숫자와 한글이 섞여도 열이 맞는다.
-    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
-
-
 def visible_len(text: str) -> int:
-    """ANSI 색상 이스케이프 코드를 제외하고, 동아시아 넓은 문자 폭을 반영한
-    실제 터미널 표시 폭을 구한다."""
-    plain = _ANSI_RE.sub("", text)
-    return sum(_char_width(ch) for ch in plain)
+    """ANSI 색상 이스케이프 코드를 제외한 실제 표시 문자 개수를 구한다.
+
+    한글 등 동아시아 문자를 유니코드 East Asian Width 기준으로 2칸 폭 취급했던
+    적이 있으나, 실제 대상 콘솔 환경에서는 한글이 1칸 폭으로 렌더링되어 오히려
+    정렬이 어긋나는 결과가 나왔다. 그래서 문자 개수 기준으로 되돌렸다."""
+    return len(_ANSI_RE.sub("", text))
 
 
 def pad(text: str, width: int, align: str = "left") -> str:
