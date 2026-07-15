@@ -18,4 +18,4 @@
 5. `CLAUDE.md`에서 `PLAN.md` 참조를 `plans/` 폴더 참조로 수정.
 6. `.claude/agents/plan-logger.md`를 새 폴더 구조 기준으로 재작성 (항목 추가 = 새 파일 생성 + README.md 인덱스 갱신).
 
-**상태**: ACTION 완료 (PLAN.md → plans/0001~0006 이관, README.md 인덱스 작성, CLAUDE.md/spec-guardian/plan-logger 참조 갱신, PLAN.md 삭제). COMMIT 대기.
+**상태**: ACTION 완료 (PLAN.md → plans/0001~0006 이관, README.md 인덱스 작성, CLAUDE.md/spec-guardian/plan-logger 참조 갱신, PLAN.md 삭제). COMMIT 완료 (`b552584`).
