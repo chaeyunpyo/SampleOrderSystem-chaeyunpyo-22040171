@@ -11,6 +11,7 @@ from sample_order_system.view.colors import (
     success,
     tier_text,
 )
+from sample_order_system.view.table import render_table
 
 BANNER = r"""
       ___________________
@@ -34,6 +35,7 @@ class ConsoleView:
             self._print_summary()
             self._print_main_menu()
             choice = input("메뉴 선택> ").strip()
+            print()
 
             if choice == "0":
                 break
@@ -48,9 +50,15 @@ class ConsoleView:
             elif choice == "5":
                 self._production_menu()
             else:
-                print("올바르지 않은 메뉴입니다.\n")
+                print(failure("올바르지 않은 메뉴입니다."))
+                print()
 
-    # -- 요약/메인 메뉴 -------------------------------------------------
+    # -- 출력 헬퍼 --------------------------------------------------------
+
+    def _print_table(self, headers: list[str], rows: list[list[str]], aligns: list[str] | None = None) -> None:
+        for line in render_table(headers, rows, aligns):
+            print(line)
+        print()
 
     def _print_banner(self) -> None:
         print(colorize(BANNER, CYAN))
@@ -108,12 +116,13 @@ class ConsoleView:
 
     def _sample_menu(self) -> None:
         while True:
-            print("\n-- 시료 관리 --")
+            print("-- 시료 관리 --")
             print("1. 시료 등록")
             print("2. 시료 목록 조회")
             print("3. 시료 검색")
             print("0. 이전 메뉴")
             choice = input("선택> ").strip()
+            print()
 
             if choice == "0":
                 return
@@ -122,23 +131,27 @@ class ConsoleView:
             elif choice == "2":
                 self._print_samples(self.controller.sample_controller.list_samples())
             elif choice == "3":
-                keyword = input("검색어 입력> ").strip()
+                keyword = self._read_required("검색어") or ""
                 self._print_samples(self.controller.sample_controller.search_by_name(keyword))
             else:
-                print("올바르지 않은 메뉴입니다.")
+                print(failure("올바르지 않은 메뉴입니다."))
+                print()
 
     def _register_sample(self) -> None:
         name = self._read_required("시료 이름")
         if name is None:
             print(muted("취소되었습니다."))
+            print()
             return
         avg_production_time = self._read_float("평균 생산시간(분)")
         if avg_production_time is None:
             print(muted("취소되었습니다."))
+            print()
             return
         yield_rate = self._read_float("수율(0~1)")
         if yield_rate is None:
             print(muted("취소되었습니다."))
+            print()
             return
 
         try:
@@ -146,26 +159,33 @@ class ConsoleView:
             print(success(f"등록 완료: {sample.sample_id} ({sample.name})"))
         except ValueError as e:
             print(failure(f"등록 실패: {e}"))
+        print()
 
     def _print_samples(self, samples) -> None:
         if not samples:
             print("등록된 시료가 없습니다.")
+            print()
             return
-        for s in samples:
-            print(
-                f"{s.sample_id} | {s.name} | 평균생산시간 {s.avg_production_time}분 | "
-                f"수율 {s.yield_rate} | 재고 {s.stock_quantity}"
-            )
+        rows = [
+            [s.sample_id, s.name, str(s.avg_production_time), str(s.yield_rate), str(s.stock_quantity)]
+            for s in samples
+        ]
+        self._print_table(
+            ["ID", "이름", "생산시간(분)", "수율", "재고"],
+            rows,
+            aligns=["left", "left", "right", "right", "right"],
+        )
 
     # -- 주문 -------------------------------------------------------------
 
     def _order_menu(self) -> None:
         while True:
-            print("\n-- 주문 (접수/승인/거절) --")
+            print("-- 주문 (접수/승인/거절) --")
             print("1. 주문 접수")
             print("2. 접수된 주문 승인/거절")
             print("0. 이전 메뉴")
             choice = input("선택> ").strip()
+            print()
 
             if choice == "0":
                 return
@@ -174,20 +194,32 @@ class ConsoleView:
             elif choice == "2":
                 self._approve_or_reject_order()
             else:
-                print("올바르지 않은 메뉴입니다.")
+                print(failure("올바르지 않은 메뉴입니다."))
+                print()
+
+    def _print_orders(self, orders: list[Order]) -> None:
+        rows = [[o.order_id, o.sample_id, o.customer_name, str(o.quantity)] for o in orders]
+        self._print_table(
+            ["ID", "시료", "고객", "수량"],
+            rows,
+            aligns=["left", "left", "left", "right"],
+        )
 
     def _create_order(self) -> None:
         sample_id = self._read_required("시료 ID")
         if sample_id is None:
             print(muted("취소되었습니다."))
+            print()
             return
         customer_name = self._read_required("고객명")
         if customer_name is None:
             print(muted("취소되었습니다."))
+            print()
             return
         quantity = self._read_int("주문 수량")
         if quantity is None:
             print(muted("취소되었습니다."))
+            print()
             return
 
         try:
@@ -195,22 +227,25 @@ class ConsoleView:
             print(success(f"접수 완료: {order.order_id} ({order.status.value})"))
         except ValueError as e:
             print(failure(f"접수 실패: {e}"))
+        print()
 
     def _approve_or_reject_order(self) -> None:
         reserved = self.controller.order_controller.list_reserved_orders()
         if not reserved:
             print("RESERVED 상태의 주문이 없습니다.")
+            print()
             return
-        for o in reserved:
-            print(f"{o.order_id} | 시료 {o.sample_id} | 고객 {o.customer_name} | 수량 {o.quantity}")
+        self._print_orders(reserved)
 
         order_id = self._read_required("대상 주문 ID")
         if order_id is None:
             print(muted("취소되었습니다."))
+            print()
             return
         action = self._read_required("승인(a) / 거절(r)")
         if action is None:
             print(muted("취소되었습니다."))
+            print()
             return
         action = action.lower()
         try:
@@ -224,25 +259,31 @@ class ConsoleView:
                 print(failure("올바르지 않은 선택입니다."))
         except ValueError as e:
             print(failure(f"처리 실패: {e}"))
+        print()
 
     # -- 모니터링 -----------------------------------------------------------
 
     def _monitoring_menu(self) -> None:
+        print("-- 주문량 확인 --")
         counts = self.controller.monitoring_controller.count_by_status()
-        print("\n-- 주문량 확인 --")
-        for status, stats in counts.items():
-            print(f"{status_text(status)}: {stats['count']}건 / 수량 {stats['quantity']}")
+        rows = [[status_text(status), str(stats["count"]), str(stats["quantity"])] for status, stats in counts.items()]
+        self._print_table(["상태", "건수", "수량"], rows, aligns=["left", "right", "right"])
 
-        print("\n-- 재고량 확인 --")
+        print("-- 재고량 확인 --")
         inventory = self.controller.monitoring_controller.inventory_status()
         if not inventory:
             print("등록된 시료가 없습니다.")
+            print()
             return
-        for row in inventory:
-            print(
-                f"{row['sample_id']} | {row['name']} | 재고 {row['stock_quantity']} | "
-                f"대기수량 {row['pending_qty']} | 상태 {tier_text(row['tier'])}"
-            )
+        rows = [
+            [row["sample_id"], row["name"], str(row["stock_quantity"]), str(row["pending_qty"]), tier_text(row["tier"])]
+            for row in inventory
+        ]
+        self._print_table(
+            ["ID", "이름", "재고", "대기수량", "상태"],
+            rows,
+            aligns=["left", "left", "right", "right", "left"],
+        )
 
     # -- 출고 처리 ---------------------------------------------------------
 
@@ -250,48 +291,72 @@ class ConsoleView:
         confirmed = self.controller.shipping_controller.list_confirmed_orders()
         if not confirmed:
             print("출고 대기 중인(CONFIRMED) 주문이 없습니다.")
+            print()
             return
-        for o in confirmed:
-            print(f"{o.order_id} | 시료 {o.sample_id} | 고객 {o.customer_name} | 수량 {o.quantity}")
+        self._print_orders(confirmed)
 
         order_id = self._read_required("출고할 주문 ID")
         if order_id is None:
             print(muted("취소되었습니다."))
+            print()
             return
         try:
             order = self.controller.shipping_controller.ship_order(order_id)
             print(success(f"출고 완료: {order.order_id} → ") + status_text(order.status.value))
         except ValueError as e:
             print(failure(f"출고 실패: {e}"))
+        print()
 
     # -- 생산 라인 ---------------------------------------------------------
 
     def _production_menu(self) -> None:
         self._report_completions(self.controller.production_controller.tick())
 
+        print("-- 현재 생산 중 --")
         active = self.controller.production_controller.get_active_status()
-        print("\n-- 현재 생산 중 --")
         if active:
-            print(f"주문 {active['order_id']} | 시료 {active['sample_name']}({active['sample_id']}) | 고객 {active['customer_name']}")
-            print(f"주문수량 {active['order_quantity']} | 부족분 {active['shortage_qty']} | 실생산량(목표) {active['target_qty']}")
-            print(
-                f"경과 {active['elapsed_minutes']}분 / 총 {active['total_minutes']}분 "
-                f"(남은시간 {active['remaining_minutes']}분, {active['percent']}%)"
+            self._print_table(
+                ["주문", "시료", "고객", "주문수량", "부족분", "실생산량", "경과(분)", "총(분)", "남은(분)", "진행률"],
+                [[
+                    active["order_id"],
+                    f"{active['sample_name']}({active['sample_id']})",
+                    active["customer_name"],
+                    str(active["order_quantity"]),
+                    str(active["shortage_qty"]),
+                    str(active["target_qty"]),
+                    str(active["elapsed_minutes"]),
+                    str(active["total_minutes"]),
+                    str(active["remaining_minutes"]),
+                    f"{active['percent']}%",
+                ]],
+                aligns=["left", "left", "left", "right", "right", "right", "right", "right", "right", "right"],
             )
         else:
             print("현재 생산 중인 항목이 없습니다.")
+            print()
 
+        print("-- 대기 큐 (FIFO) --")
         waiting = self.controller.production_controller.get_waiting_queue_status()
-        print("\n-- 대기 큐 (FIFO) --")
         if not waiting:
             print("대기 중인 항목이 없습니다.")
+            print()
             return
-        for row in waiting:
-            print(
-                f"{row['position']}. 주문 {row['order_id']} | 시료 {row['sample_name']}({row['sample_id']}) | "
-                f"고객 {row['customer_name']} | 주문수량 {row['order_quantity']}"
-            )
-            print(
-                f"   부족분 {row['shortage_qty']} → 실생산량 {row['actual_production_qty']} | "
-                f"소요시간 {row['total_minutes']}분 | 예상 시작까지 {row['expected_wait_minutes']}분"
-            )
+        rows = [
+            [
+                str(row["position"]),
+                row["order_id"],
+                f"{row['sample_name']}({row['sample_id']})",
+                row["customer_name"],
+                str(row["order_quantity"]),
+                str(row["shortage_qty"]),
+                str(row["actual_production_qty"]),
+                str(row["total_minutes"]),
+                str(row["expected_wait_minutes"]),
+            ]
+            for row in waiting
+        ]
+        self._print_table(
+            ["#", "주문", "시료", "고객", "주문수량", "부족분", "실생산량", "소요(분)", "대기(분)"],
+            rows,
+            aligns=["right", "left", "left", "left", "right", "right", "right", "right", "right"],
+        )
