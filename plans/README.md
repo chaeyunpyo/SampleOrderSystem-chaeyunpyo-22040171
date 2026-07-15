@@ -17,3 +17,4 @@
 | [0009](./0009-tools-dummy-data-and-monitor.md) | tools/: 더미데이터 생성기 + 모니터 실행 스크립트 | 2026-07-15 | COMMIT 완료 (`f41f231`) |
 | [0010](./0010-readme-and-validation-tests.md) | README.md 작성 + 입력 검증 테스트 보강 | 2026-07-15 | COMMIT 완료 (`85bfd6d`) |
 | [0011](./0011-cli-input-usability.md) | CLI 입력 사용성 개선 (재시도 + 취소) | 2026-07-15 | COMMIT 완료 (`eca1702`) |
+| [0012](./0012-production-status-detail.md) | 생산 현황 표기 정보량 확대 | 2026-07-15 | COMMIT 완료 (`2eeffa6`) |
