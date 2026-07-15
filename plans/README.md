@@ -19,3 +19,4 @@
 | [0011](./0011-cli-input-usability.md) | CLI 입력 사용성 개선 (재시도 + 취소) | 2026-07-15 | COMMIT 완료 (`eca1702`) |
 | [0012](./0012-production-status-detail.md) | 생산 현황 표기 정보량 확대 | 2026-07-15 | COMMIT 완료 (`2eeffa6`) |
 | [0013](./0013-cli-color-and-banner.md) | CLI 색상/배너 디자인 추가 | 2026-07-15 | COMMIT 완료 (`1bf52b1`) |
+| [0014](./0014-overlapping-order-stock-overcommit-fix.md) | 겹치는 주문/생산 재고 이중 소진 버그 수정 | 2026-07-15 | COMMIT 완료 (`1dbdd3a`) |
