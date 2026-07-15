@@ -247,20 +247,26 @@ class ConsoleView:
         active = self.controller.production_controller.get_active_status()
         print("\n-- 현재 생산 중 --")
         if active:
+            print(f"주문 {active['order_id']} | 시료 {active['sample_name']}({active['sample_id']}) | 고객 {active['customer_name']}")
+            print(f"주문수량 {active['order_quantity']} | 부족분 {active['shortage_qty']} | 실생산량(목표) {active['target_qty']}")
             print(
-                f"{active['order_id']} | 시료 {active['sample_name']} | 목표수량 {active['target_qty']} | "
-                f"경과 {active['elapsed_minutes']}/{active['total_minutes']}분 ({active['percent']}%)"
+                f"경과 {active['elapsed_minutes']}분 / 총 {active['total_minutes']}분 "
+                f"(남은시간 {active['remaining_minutes']}분, {active['percent']}%)"
             )
         else:
             print("현재 생산 중인 항목이 없습니다.")
 
-        waiting = self.controller.production_controller.get_waiting_queue()
+        waiting = self.controller.production_controller.get_waiting_queue_status()
         print("\n-- 대기 큐 (FIFO) --")
         if not waiting:
             print("대기 중인 항목이 없습니다.")
             return
-        for i, item in enumerate(waiting, start=1):
+        for row in waiting:
             print(
-                f"{i}. {item.order_id} | 시료 {item.sample_id} | 부족분 {item.shortage_qty} → "
-                f"실생산량 {item.actual_production_qty}"
+                f"{row['position']}. 주문 {row['order_id']} | 시료 {row['sample_name']}({row['sample_id']}) | "
+                f"고객 {row['customer_name']} | 주문수량 {row['order_quantity']}"
+            )
+            print(
+                f"   부족분 {row['shortage_qty']} → 실생산량 {row['actual_production_qty']} | "
+                f"소요시간 {row['total_minutes']}분 | 예상 시작까지 {row['expected_wait_minutes']}분"
             )

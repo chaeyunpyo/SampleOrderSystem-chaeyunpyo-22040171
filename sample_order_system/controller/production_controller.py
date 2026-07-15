@@ -56,8 +56,7 @@ class ProductionController:
 
     def _complete_active(self) -> Order:
         item = self._active
-        sample = self.sample_repository.get(item.sample_id)
-        order = self.order_repository.get(item.order_id)
+        order, sample = self._order_and_sample(item)
 
         sample.stock_quantity += item.actual_production_qty
         sample.stock_quantity -= order.quantity
@@ -73,26 +72,62 @@ class ProductionController:
     def get_active_status(self) -> dict | None:
         if self._active is None:
             return None
-        sample = self.sample_repository.get(self._active.sample_id)
-        elapsed_minutes = (self.clock.now() - self._active.started_at).total_seconds() / 60
-        elapsed_minutes = min(elapsed_minutes, self._active.total_production_time)
+        item = self._active
+        order, sample = self._order_and_sample(item)
+        elapsed_minutes = (self.clock.now() - item.started_at).total_seconds() / 60
+        elapsed_minutes = min(elapsed_minutes, item.total_production_time)
+        remaining_minutes = max(item.total_production_time - elapsed_minutes, 0.0)
         percent = (
             100.0
-            if self._active.total_production_time == 0
-            else round(elapsed_minutes / self._active.total_production_time * 100, 1)
+            if item.total_production_time == 0
+            else round(elapsed_minutes / item.total_production_time * 100, 1)
         )
         return {
-            "order_id": self._active.order_id,
-            "sample_id": self._active.sample_id,
+            "order_id": item.order_id,
+            "sample_id": item.sample_id,
             "sample_name": sample.name,
-            "target_qty": self._active.actual_production_qty,
+            "customer_name": order.customer_name,
+            "order_quantity": order.quantity,
+            "shortage_qty": item.shortage_qty,
+            "target_qty": item.actual_production_qty,
             "elapsed_minutes": round(elapsed_minutes, 2),
-            "total_minutes": self._active.total_production_time,
+            "remaining_minutes": round(remaining_minutes, 2),
+            "total_minutes": item.total_production_time,
             "percent": percent,
         }
 
     def get_waiting_queue(self) -> list[ProductionQueueItem]:
         return list(self._queue)
+
+    def get_waiting_queue_status(self) -> list[dict]:
+        active_status = self.get_active_status()
+        expected_wait = active_status["remaining_minutes"] if active_status else 0.0
+
+        result = []
+        for position, item in enumerate(self._queue, start=1):
+            order, sample = self._order_and_sample(item)
+            result.append(
+                {
+                    "position": position,
+                    "order_id": item.order_id,
+                    "sample_id": item.sample_id,
+                    "sample_name": sample.name,
+                    "customer_name": order.customer_name,
+                    "order_quantity": order.quantity,
+                    "shortage_qty": item.shortage_qty,
+                    "actual_production_qty": item.actual_production_qty,
+                    "total_minutes": item.total_production_time,
+                    "expected_wait_minutes": round(expected_wait, 2),
+                }
+            )
+            expected_wait += item.total_production_time
+
+        return result
+
+    def _order_and_sample(self, item: ProductionQueueItem) -> tuple[Order, Sample]:
+        order = self.order_repository.get(item.order_id)
+        sample = self.sample_repository.get(item.sample_id)
+        return order, sample
 
     def _persist_state(self) -> None:
         self.production_state_repository.save(self._queue, self._active)
