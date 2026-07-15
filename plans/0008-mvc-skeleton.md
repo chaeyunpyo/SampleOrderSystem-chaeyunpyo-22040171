@@ -28,4 +28,4 @@
 
 **미해결 질문**: 없음 (이번 사이클 관련 설계 결정은 모두 확정됨).
 
-**상태**: PLAN 완료. ACTION 진행 중.
+**상태**: ACTION 완료 (Model/Controller/View/main.py/tests 34개 전부 통과, domain-reviewer 리뷰로 단일 생산 라인 관련 테스트 시나리오 1건 수정, spec-guardian 1·2차 검증 통과). COMMIT 완료 — `cc6d15a`(모델/리포지토리), `7d70060`(컨트롤러), `6125863`(뷰/main.py), `adca791`(테스트), `9b44691`(PRD/plans 문서 갱신).
