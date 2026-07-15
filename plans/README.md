@@ -18,3 +18,4 @@
 | [0010](./0010-readme-and-validation-tests.md) | README.md 작성 + 입력 검증 테스트 보강 | 2026-07-15 | COMMIT 완료 (`85bfd6d`) |
 | [0011](./0011-cli-input-usability.md) | CLI 입력 사용성 개선 (재시도 + 취소) | 2026-07-15 | COMMIT 완료 (`eca1702`) |
 | [0012](./0012-production-status-detail.md) | 생산 현황 표기 정보량 확대 | 2026-07-15 | COMMIT 완료 (`2eeffa6`) |
+| [0013](./0013-cli-color-and-banner.md) | CLI 색상/배너 디자인 추가 | 2026-07-15 | COMMIT 완료 (`1bf52b1`) |
