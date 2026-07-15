@@ -58,8 +58,10 @@ class ProductionController:
         item = self._active
         order, sample = self._order_and_sample(item)
 
-        sample.stock_quantity += item.actual_production_qty
-        sample.stock_quantity -= order.quantity
+        # shortage_qty만큼은 이미 승인 시점에 이 주문 몫으로 선점되어 stock_quantity에서
+        # 빠져 있었다(order_controller.approve_order 참고). 여기서는 수율 올림으로 생기는
+        # 초과분(actual_production_qty - shortage_qty)만 재고로 되돌린다.
+        sample.stock_quantity += item.actual_production_qty - item.shortage_qty
         self.sample_repository.save(sample)
 
         order.status = OrderStatus.CONFIRMED

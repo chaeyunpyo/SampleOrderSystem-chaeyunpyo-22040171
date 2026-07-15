@@ -47,6 +47,11 @@ class OrderController:
             order.status = OrderStatus.CONFIRMED
         else:
             shortage_qty = order.quantity - sample.stock_quantity
+            # 부족 상황이므로 남아있는 재고 전량은 이 주문 몫이다. 즉시 0으로 선점해두지
+            # 않으면, 같은 시료의 다른 주문이 이 재고를 다시 "사용 가능"한 것으로 오판해
+            # 두 생산이 완료될 때 같은 재고를 이중으로 차감하게 된다(재고 음수화 버그).
+            sample.stock_quantity = 0
+            self.sample_repository.save(sample)
             self.production_controller.enqueue(order, sample, shortage_qty)
             order.status = OrderStatus.PRODUCING
 
