@@ -2,6 +2,25 @@ from __future__ import annotations
 
 from sample_order_system.controller.main_controller import MainController
 from sample_order_system.model.order import Order
+from sample_order_system.view.colors import (
+    CYAN,
+    colorize,
+    failure,
+    muted,
+    status_text,
+    success,
+    tier_text,
+)
+
+BANNER = r"""
+      ___________________
+     |  _______________  |
+     | |###############| |
+     | |###  S-Semi  ###| |
+     | |###############| |
+     |___________________|
+        |  |  |  |  |  |
+"""
 
 
 class ConsoleView:
@@ -9,6 +28,7 @@ class ConsoleView:
         self.controller = MainController()
 
     def run(self) -> None:
+        self._print_banner()
         while True:
             self._report_completions(self.controller.production_controller.tick())
             self._print_summary()
@@ -32,6 +52,11 @@ class ConsoleView:
 
     # -- 요약/메인 메뉴 -------------------------------------------------
 
+    def _print_banner(self) -> None:
+        print(colorize(BANNER, CYAN))
+        print(colorize("  반도체 시료 생산주문관리 시스템".center(40), CYAN))
+        print()
+
     def _print_summary(self) -> None:
         summary = self.controller.get_summary()
         print("=" * 40)
@@ -51,7 +76,7 @@ class ConsoleView:
 
     def _report_completions(self, completed_orders: list[Order]) -> None:
         for order in completed_orders:
-            print(f"[생산 완료] {order.order_id} → CONFIRMED")
+            print(success(f"[생산 완료] {order.order_id} → CONFIRMED"))
 
     # -- 입력 헬퍼 (빈 입력으로 취소, 잘못된 값은 같은 항목만 재입력) --------
 
@@ -105,22 +130,22 @@ class ConsoleView:
     def _register_sample(self) -> None:
         name = self._read_required("시료 이름")
         if name is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         avg_production_time = self._read_float("평균 생산시간(분)")
         if avg_production_time is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         yield_rate = self._read_float("수율(0~1)")
         if yield_rate is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
 
         try:
             sample = self.controller.sample_controller.register_sample(name, avg_production_time, yield_rate)
-            print(f"등록 완료: {sample.sample_id} ({sample.name})")
+            print(success(f"등록 완료: {sample.sample_id} ({sample.name})"))
         except ValueError as e:
-            print(f"등록 실패: {e}")
+            print(failure(f"등록 실패: {e}"))
 
     def _print_samples(self, samples) -> None:
         if not samples:
@@ -154,22 +179,22 @@ class ConsoleView:
     def _create_order(self) -> None:
         sample_id = self._read_required("시료 ID")
         if sample_id is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         customer_name = self._read_required("고객명")
         if customer_name is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         quantity = self._read_int("주문 수량")
         if quantity is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
 
         try:
             order = self.controller.order_controller.create_order(sample_id, customer_name, quantity)
-            print(f"접수 완료: {order.order_id} (RESERVED)")
+            print(success(f"접수 완료: {order.order_id} ({order.status.value})"))
         except ValueError as e:
-            print(f"접수 실패: {e}")
+            print(failure(f"접수 실패: {e}"))
 
     def _approve_or_reject_order(self) -> None:
         reserved = self.controller.order_controller.list_reserved_orders()
@@ -181,24 +206,24 @@ class ConsoleView:
 
         order_id = self._read_required("대상 주문 ID")
         if order_id is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         action = self._read_required("승인(a) / 거절(r)")
         if action is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         action = action.lower()
         try:
             if action == "a":
                 order = self.controller.order_controller.approve_order(order_id)
-                print(f"승인 완료: {order.order_id} → {order.status.value}")
+                print(success(f"승인 완료: {order.order_id} → ") + status_text(order.status.value))
             elif action == "r":
                 order = self.controller.order_controller.reject_order(order_id)
-                print(f"거절 완료: {order.order_id} → {order.status.value}")
+                print(success(f"거절 완료: {order.order_id} → ") + status_text(order.status.value))
             else:
-                print("올바르지 않은 선택입니다.")
+                print(failure("올바르지 않은 선택입니다."))
         except ValueError as e:
-            print(f"처리 실패: {e}")
+            print(failure(f"처리 실패: {e}"))
 
     # -- 모니터링 -----------------------------------------------------------
 
@@ -206,7 +231,7 @@ class ConsoleView:
         counts = self.controller.monitoring_controller.count_by_status()
         print("\n-- 주문량 확인 --")
         for status, stats in counts.items():
-            print(f"{status}: {stats['count']}건 / 수량 {stats['quantity']}")
+            print(f"{status_text(status)}: {stats['count']}건 / 수량 {stats['quantity']}")
 
         print("\n-- 재고량 확인 --")
         inventory = self.controller.monitoring_controller.inventory_status()
@@ -216,7 +241,7 @@ class ConsoleView:
         for row in inventory:
             print(
                 f"{row['sample_id']} | {row['name']} | 재고 {row['stock_quantity']} | "
-                f"대기수량 {row['pending_qty']} | 상태 {row['tier']}"
+                f"대기수량 {row['pending_qty']} | 상태 {tier_text(row['tier'])}"
             )
 
     # -- 출고 처리 ---------------------------------------------------------
@@ -231,13 +256,13 @@ class ConsoleView:
 
         order_id = self._read_required("출고할 주문 ID")
         if order_id is None:
-            print("취소되었습니다.")
+            print(muted("취소되었습니다."))
             return
         try:
             order = self.controller.shipping_controller.ship_order(order_id)
-            print(f"출고 완료: {order.order_id} → {order.status.value}")
+            print(success(f"출고 완료: {order.order_id} → ") + status_text(order.status.value))
         except ValueError as e:
-            print(f"출고 실패: {e}")
+            print(failure(f"출고 실패: {e}"))
 
     # -- 생산 라인 ---------------------------------------------------------
 
